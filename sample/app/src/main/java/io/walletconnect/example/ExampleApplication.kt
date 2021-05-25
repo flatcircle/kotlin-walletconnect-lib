@@ -46,17 +46,17 @@ class ExampleApplication : MultiDexApplication() {
         lateinit var config: Session.Config
         lateinit var session: Session
 
-        fun resetSession() {
+        fun resetSession(sentMsgCallback: (() -> Unit)? = null) {
             nullOnThrow { session }?.clearCallbacks()
             val key = ByteArray(32).also { Random().nextBytes(it) }.toNoPrefixHexString()
             config = Session.Config(UUID.randomUUID().toString(), "http://localhost:${BridgeServer.PORT}", key)
-            session = WCSession(config,
+            session = WCSession(config.toFullyQualifiedConfig(),
                     MoshiPayloadAdapter(moshi),
                     storage,
                     OkHttpTransport.Builder(client, moshi),
                     Session.PeerMeta(name = "Example App")
             )
-            session.offer()
+            session.offer(sentMsgCallback = sentMsgCallback)
         }
     }
 }

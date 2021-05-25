@@ -19,7 +19,7 @@ class MainActivity : Activity(), Session.Callback {
     private val uiScope = CoroutineScope(Dispatchers.Main)
 
     override fun onStatus(status: Session.Status) {
-        when(status) {
+        when (status) {
             Session.Status.Approved -> sessionApproved()
             Session.Status.Closed -> sessionClosed()
             Session.Status.Connected,
@@ -32,6 +32,7 @@ class MainActivity : Activity(), Session.Callback {
 
     override fun onMethodCall(call: Session.MethodCall) {
     }
+
     private fun sessionApproved() {
         uiScope.launch {
             screen_main_status.text = "Connected: ${ExampleApplication.session.approvedAccounts()}"
@@ -59,11 +60,12 @@ class MainActivity : Activity(), Session.Callback {
         super.onStart()
         initialSetup()
         screen_main_connect_button.setOnClickListener {
-            ExampleApplication.resetSession()
+            ExampleApplication.resetSession(sentMsgCallback = {
+                val i = Intent(Intent.ACTION_VIEW)
+                i.data = Uri.parse(ExampleApplication.config.toWCUri())
+                startActivity(i)
+            })
             ExampleApplication.session.addCallback(this)
-            val i = Intent(Intent.ACTION_VIEW)
-            i.data = Uri.parse(ExampleApplication.config.toWCUri())
-            startActivity(i)
         }
         screen_main_disconnect_button.setOnClickListener {
             ExampleApplication.session.kill()
@@ -83,7 +85,12 @@ class MainActivity : Activity(), Session.Callback {
                             "0x5AF3107A4000",
                             ""
                     ),
-                    ::handleResponse
+                    ::handleResponse,
+                    sentMsgCallback = {
+                        val i = Intent(Intent.ACTION_VIEW)
+                        i.data = Uri.parse(ExampleApplication.config.toWCUri())
+                        startActivity(i)
+                    }
             )
             this.txRequest = txRequest
         }
@@ -100,7 +107,8 @@ class MainActivity : Activity(), Session.Callback {
             txRequest = null
             uiScope.launch {
                 screen_main_response.visibility = View.VISIBLE
-                screen_main_response.text = "Last response: " + ((resp.result as? String) ?: "Unknown response")
+                screen_main_response.text = "Last response: " + ((resp.result as? String)
+                        ?: "Unknown response")
             }
         }
     }
