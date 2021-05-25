@@ -9,7 +9,7 @@ interface Session {
     /**
      * Send client info to the bridge and wait for a client to connect
      */
-    fun offer()
+    fun offer(sentMsgCallback: (() -> Unit)? = null)
     fun approve(accounts: List<String>, chainId: Long)
     fun reject()
     fun update(accounts: List<String>, chainId: Long)
@@ -20,7 +20,7 @@ interface Session {
 
     fun approveRequest(id: Long, response: Any)
     fun rejectRequest(id: Long, errorCode: Long, errorMsg: String)
-    fun performMethodCall(call: MethodCall, callback: ((MethodCall.Response) -> Unit)? = null)
+    fun performMethodCall(call: MethodCall, callback: ((MethodCall.Response) -> Unit)? = null, sentMsgCallback: (() -> Unit)? = null)
 
     fun addCallback(cb: Callback)
     fun removeCallback(cb: Callback)
@@ -97,7 +97,7 @@ interface Session {
 
         fun isConnected(): Boolean
 
-        fun send(message: Message)
+        fun send(message: Message, sentMsgCallback: (() -> Unit)? = null)
 
         fun close()
 
