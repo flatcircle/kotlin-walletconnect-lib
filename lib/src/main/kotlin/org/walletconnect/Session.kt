@@ -97,7 +97,7 @@ interface Session {
 
         fun isConnected(): Boolean
 
-        fun send(message: Message, sentMsgCallback: (() -> Unit)? = null)
+        fun send(message: Message)
 
         fun close()
 
