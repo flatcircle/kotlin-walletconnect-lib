@@ -110,6 +110,7 @@ class WCSession(
                 }
             })
             handshakeId = requestId
+            sentMsgCallback?.invoke()
         }
     }
 
@@ -154,6 +155,7 @@ class WCSession(
 
     override fun performMethodCall(call: Session.MethodCall, callback: ((Session.MethodCall.Response) -> Unit)?, sentMsgCallback: (() -> Unit)?) {
         send(call, callback = callback)
+        sentMsgCallback?.invoke()
     }
 
     private fun handleStatus(status: Session.Transport.Status) {
@@ -260,8 +262,7 @@ class WCSession(
     private fun send(
             msg: Session.MethodCall,
             topic: String? = peerId,
-            callback: ((Session.MethodCall.Response) -> Unit)? = null,
-            sentMsgCallback: (() -> Unit)? = null
+            callback: ((Session.MethodCall.Response) -> Unit)? = null
     ): Boolean {
         topic ?: return false
 
@@ -273,7 +274,6 @@ class WCSession(
             requests[msg.id()] = callback
         }
         transport.send(Session.Transport.Message(topic, "pub", payload))
-        sentMsgCallback?.invoke()
         return true
     }
 
