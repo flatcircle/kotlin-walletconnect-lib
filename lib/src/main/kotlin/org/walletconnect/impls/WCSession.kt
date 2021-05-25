@@ -96,7 +96,7 @@ class WCSession(
         }
     }
 
-    override fun offer() {
+    override fun offer(sentMsgCallback: (() -> Unit)?) {
         if (transport.connect()) {
             val requestId = createCallId()
             send(Session.MethodCall.SessionRequest(requestId, clientData), topic = config.handshakeTopic, callback = { resp ->
@@ -152,7 +152,7 @@ class WCSession(
         )
     }
 
-    override fun performMethodCall(call: Session.MethodCall, callback: ((Session.MethodCall.Response) -> Unit)?) {
+    override fun performMethodCall(call: Session.MethodCall, callback: ((Session.MethodCall.Response) -> Unit)?, sentMsgCallback: (() -> Unit)?) {
         send(call, callback = callback)
     }
 
@@ -260,7 +260,8 @@ class WCSession(
     private fun send(
             msg: Session.MethodCall,
             topic: String? = peerId,
-            callback: ((Session.MethodCall.Response) -> Unit)? = null
+            callback: ((Session.MethodCall.Response) -> Unit)? = null,
+            sentMsgCallback: (() -> Unit)? = null
     ): Boolean {
         topic ?: return false
 
@@ -272,6 +273,7 @@ class WCSession(
             requests[msg.id()] = callback
         }
         transport.send(Session.Transport.Message(topic, "pub", payload))
+        sentMsgCallback?.invoke()
         return true
     }
 
